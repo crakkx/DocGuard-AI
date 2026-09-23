@@ -1,0 +1,35 @@
+# Uploads and PDFs (do not commit)
+uploads/
+backend/uploads/
+test_doc/*.pdf
+*.pdf
+
+.claude
+
+# Python & Virtual Environments
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Node & Next.js
+node_modules/
+frontend/node_modules/
+.next/
+frontend/.next/
+out/
+build/
+dist/
+
+# Environment Variables & Secrets
+.env
+.env.local
+.env*.local
+
+# System files & logs
+.DS_Store
+*.log
