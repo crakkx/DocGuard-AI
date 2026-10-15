@@ -72,8 +72,8 @@ async def upload_document(
     db.add(document)
     await db.flush()
 
-    # Extract fields
-    fields = extractor.extract(str(dest), doc_type)
+    # Extract fields with VLM
+    fields = await extractor.extract_async(str(dest), doc_type)
     for f_data in fields:
         extracted = ExtractedData(
             document_id=document.id,
@@ -209,15 +209,72 @@ async def delete_document(doc_id: str, db: AsyncSession = Depends(get_db)):
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found")
 
-    # Nullify FK references in any linked cases
     from app.models.procurement_case import ProcurementCase
-    from sqlalchemy import update
-    uid = UUID(doc_id)
-    await db.execute(update(ProcurementCase).where(ProcurementCase.po_document_id == uid).values(po_document_id=None))
-    await db.execute(update(ProcurementCase).where(ProcurementCase.invoice_document_id == uid).values(invoice_document_id=None))
-    await db.execute(update(ProcurementCase).where(ProcurementCase.grn_document_id == uid).values(grn_document_id=None))
+    from app.models.finding import ComplianceFinding
+    from app.models.review import ReviewDecision
+    from app.models.document import ExtractedData
+    from app.models.audit import AuditEntry
+    from app.models.policy import PolicyDocument
+    from sqlalchemy import update, delete
 
-    # Delete physical file
+    uid = UUID(doc_id)
+
+    # 1. Delete or unlink related cases
+    cases_result = await db.execute(
+        select(ProcurementCase).where(
+            (ProcurementCase.po_document_id == uid)
+            | (ProcurementCase.invoice_document_id == uid)
+            | (ProcurementCase.grn_document_id == uid)
+        )
+    )
+    linked_cases = cases_result.scalars().all()
+
+    for c in linked_cases:
+        other_docs = [
+            did for did in (c.po_document_id, c.invoice_document_id, c.grn_document_id)
+            if did and did != uid
+        ]
+        if not other_docs:
+            # Case only had this document: delete the entire case and its findings/audits
+            await db.execute(update(AuditEntry).where(AuditEntry.case_id == c.id).values(finding_id=None))
+            await db.execute(delete(ComplianceFinding).where(ComplianceFinding.case_id == c.id))
+            await db.execute(delete(ReviewDecision).where(ReviewDecision.case_id == c.id))
+            await db.execute(delete(AuditEntry).where(AuditEntry.case_id == c.id))
+            await db.delete(c)
+        else:
+            # Case has other document(s); unlink this deleted document
+            if c.po_document_id == uid:
+                c.po_document_id = None
+            if c.invoice_document_id == uid:
+                c.invoice_document_id = None
+            if c.grn_document_id == uid:
+                c.grn_document_id = None
+
+    # Also clean up any empty orphaned cases without any documents
+    orphaned_res = await db.execute(
+        select(ProcurementCase).where(
+            ProcurementCase.po_document_id.is_(None)
+            & ProcurementCase.invoice_document_id.is_(None)
+            & ProcurementCase.grn_document_id.is_(None)
+        )
+    )
+    for oc in orphaned_res.scalars().all():
+        await db.execute(update(AuditEntry).where(AuditEntry.case_id == oc.id).values(finding_id=None))
+        await db.execute(delete(ComplianceFinding).where(ComplianceFinding.case_id == oc.id))
+        await db.execute(delete(ReviewDecision).where(ReviewDecision.case_id == oc.id))
+        await db.execute(delete(AuditEntry).where(AuditEntry.case_id == oc.id))
+        await db.delete(oc)
+
+    # 2. Nullify references in policy documents
+    await db.execute(update(PolicyDocument).where(PolicyDocument.source_file_id == uid).values(source_file_id=None))
+
+    # 3. Delete extracted data associated with this document
+    await db.execute(delete(ExtractedData).where(ExtractedData.document_id == uid))
+
+    # 4. Nullify existing audit entries referencing this document
+    await db.execute(update(AuditEntry).where(AuditEntry.document_id == uid).values(document_id=None))
+
+    # 5. Delete physical file if present
     try:
         import os
         if doc.filepath and os.path.exists(doc.filepath):
@@ -225,13 +282,19 @@ async def delete_document(doc_id: str, db: AsyncSession = Depends(get_db)):
     except Exception:
         pass
 
+    filename_for_log = doc.original_filename or doc.filename
+
+    # 6. Delete document record
+    await db.delete(doc)
+    await db.flush()
+
+    # 7. Log audit event without referencing deleted document_id FK
     await audit_service.log(
         db,
         "DOCUMENT_DELETED",
-        f"Deleted document {doc.original_filename or doc.filename}",
-        document_id=doc.id,
+        f"Deleted document {filename_for_log}",
+        metadata={"deleted_document_id": str(uid)},
     )
-    await db.delete(doc)
     await db.commit()
     return {"deleted": True, "id": doc_id}
 

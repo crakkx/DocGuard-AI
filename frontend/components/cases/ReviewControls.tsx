@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Spinner } from "@/components/ui/spinner";
 import { useCaseDecision } from "@/hooks/useCases";
 import { useToast } from "@/components/ui/toast";
@@ -40,19 +39,20 @@ export function ReviewControls({ caseId }: { caseId: string }) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Input
           placeholder="Reviewer name"
           value={reviewer}
           onChange={(e) => setReviewer(e.target.value)}
           disabled={isPending}
+          className="h-10 text-sm bg-slate-50 border-slate-200"
         />
-        <Textarea
+        <Input
           placeholder="Comment (optional)"
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           disabled={isPending}
-          className="min-h-9 sm:min-h-0"
+          className="h-10 text-sm bg-slate-50 border-slate-200"
         />
       </div>
       <div className="flex flex-wrap items-center gap-2">

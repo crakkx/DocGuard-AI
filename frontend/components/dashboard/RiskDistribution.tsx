@@ -1,12 +1,11 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import type { CaseSummary } from "@/types";
-import { cn } from "@/lib/utils";
 
-const LEVELS: { key: string; label: string; barClass: string }[] = [
-  { key: "CRITICAL", label: "Critical", barClass: "bg-red-500" },
-  { key: "HIGH", label: "High", barClass: "bg-orange-500" },
-  { key: "MEDIUM", label: "Medium", barClass: "bg-blue-500" },
-  { key: "LOW", label: "Low", barClass: "bg-emerald-500" },
+const LEVELS: { key: string; label: string; barColor: string; textColor: string; dotColor: string }[] = [
+  { key: "CRITICAL", label: "Critical", barColor: "#EF4444", textColor: "#EF4444", dotColor: "#EF4444" },
+  { key: "HIGH",     label: "High",     barColor: "#F97316", textColor: "#F97316", dotColor: "#F97316" },
+  { key: "MEDIUM",   label: "Medium",   barColor: "#F59E0B", textColor: "#F59E0B", dotColor: "#F59E0B" },
+  { key: "LOW",      label: "Low",      barColor: "#22C55E", textColor: "#22C55E", dotColor: "#22C55E" },
 ];
 
 export function RiskDistribution({ cases }: { cases: CaseSummary[] }) {
@@ -20,20 +19,51 @@ export function RiskDistribution({ cases }: { cases: CaseSummary[] }) {
     <Card>
       <CardHeader>
         <CardTitle>Risk Distribution</CardTitle>
+        <CardDescription>Cases by risk level breakdown</CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col gap-3">
+      <CardContent style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         {counts.map((l) => (
-          <div key={l.key} className="flex items-center gap-3">
-            <span className="w-16 shrink-0 text-xs font-medium text-slate-600">{l.label}</span>
-            <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
+          <div key={l.key} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {/* Colored dot */}
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: l.dotColor, flexShrink: 0 }} />
+            <span style={{ width: 52, flexShrink: 0, fontSize: 12.5, fontWeight: 500, color: "var(--text-secondary)" }}>
+              {l.label}
+            </span>
+            <div className="dg-progress-track" style={{ flex: 1 }}>
               <div
-                className={cn("h-full rounded-full", l.barClass)}
-                style={{ width: `${(l.count / total) * 100}%` }}
+                className="dg-progress-fill"
+                style={{
+                  width: `${(l.count / total) * 100}%`,
+                  background: l.barColor,
+                }}
               />
             </div>
-            <span className="w-6 shrink-0 text-right text-xs text-slate-500">{l.count}</span>
+            <span style={{
+              width: 24,
+              flexShrink: 0,
+              textAlign: "right",
+              fontSize: 12.5,
+              fontWeight: 600,
+              color: l.count > 0 ? l.textColor : "var(--text-muted)",
+            }}>
+              {l.count}
+            </span>
           </div>
         ))}
+
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingTop: 10,
+          borderTop: "1px solid var(--border)",
+          marginTop: 2,
+        }}>
+          <span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 500 }}>Total cases</span>
+          <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--text-primary)" }}>
+            {cases.length}
+          </span>
+        </div>
       </CardContent>
     </Card>
   );

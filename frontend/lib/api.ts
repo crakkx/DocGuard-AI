@@ -89,6 +89,8 @@ export const api = {
   runCompliance: (caseId: string) =>
     request(`/api/cases/${caseId}/run-compliance`, { method: "POST" }),
   getCaseAudit: (caseId: string) => request(`/api/cases/${caseId}/audit`),
+  deleteCase: (caseId: string) =>
+    request<{ deleted: boolean; id: string }>(`/api/cases/${caseId}`, { method: "DELETE" }),
 
   // Review
   reviewFinding: (

@@ -45,25 +45,28 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={{ toast }}>
       {children}
-      <div className="pointer-events-none fixed bottom-4 right-4 z-[100] flex w-full max-w-sm flex-col gap-2">
+      <div className="pointer-events-none fixed bottom-5 right-5 z-[100] flex w-full max-w-sm flex-col gap-2">
         {items.map((t) => (
           <div
             key={t.id}
             className={cn(
-              "pointer-events-auto flex items-start gap-2 rounded-lg border bg-white p-3 shadow-lg",
-              t.variant === "success" && "border-emerald-200",
+              "pointer-events-auto flex items-start gap-3 rounded-xl border bg-white p-4 shadow-lg animate-fade-up",
+              t.variant === "success" && "border-green-200",
               t.variant === "error" && "border-red-200",
-              t.variant === "default" && "border-slate-200"
+              t.variant === "default" && "border-[var(--border)]"
             )}
           >
-            {t.variant === "success" && <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />}
-            {t.variant === "error" && <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />}
-            {t.variant === "default" && <Info className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" />}
+            {t.variant === "success" && <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />}
+            {t.variant === "error" && <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />}
+            {t.variant === "default" && <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-500" />}
             <div className="flex-1 text-sm">
-              <p className="font-medium text-slate-900">{t.title}</p>
-              {t.description && <p className="text-xs text-slate-500">{t.description}</p>}
+              <p className="font-semibold text-[var(--text-primary)]">{t.title}</p>
+              {t.description && <p className="mt-0.5 text-xs text-[var(--text-muted)]">{t.description}</p>}
             </div>
-            <button onClick={() => dismiss(t.id)} className="text-slate-400 hover:text-slate-600">
+            <button
+              onClick={() => dismiss(t.id)}
+              className="rounded-md p-1 text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]"
+            >
               <X className="h-3.5 w-3.5" />
             </button>
           </div>

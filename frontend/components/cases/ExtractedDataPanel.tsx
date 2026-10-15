@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { EmptyState } from "@/components/ui/empty-state";
-import { cn, formatPercent } from "@/lib/utils";
+import { cn, formatPercent, formatCurrency } from "@/lib/utils";
 import { FileStack } from "lucide-react";
 import type { CaseDetail, ExtractedField } from "@/types";
 
@@ -38,12 +38,52 @@ function valuesDiffer(row: Row): boolean {
   return new Set(values).size > 1;
 }
 
+function formatFieldValue(fieldName: string, rawValue: string): string {
+  if (!rawValue) return "—";
+  const trimmed = rawValue.trim();
+  if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) {
+        if (parsed.length === 0) return "0 items";
+        const first = parsed[0];
+        const desc = first?.item_description || first?.description || first?.name || "Item";
+        if (parsed.length === 1) return String(desc);
+        return `${desc} (+${parsed.length - 1} more)`;
+      } else if (typeof parsed === "object" && parsed !== null) {
+        const parts: string[] = [];
+        for (const [k, v] of Object.entries(parsed)) {
+          if (typeof v === "object" && v !== null && "amount" in v) {
+            parts.push(`${k}: ${formatCurrency(Number((v as any).amount))}`);
+          } else if (typeof v === "string" || typeof v === "number") {
+            parts.push(`${k}: ${v}`);
+          }
+        }
+        if (parts.length > 0) return parts.join(", ");
+        return JSON.stringify(parsed);
+      }
+    } catch {
+      // ignore parse errors
+    }
+  }
+  if (["total_amount", "subtotal", "unit_price", "amount"].includes(fieldName.toLowerCase())) {
+    const num = Number(rawValue.replace(/,/g, ""));
+    if (!Number.isNaN(num)) return formatCurrency(num);
+  }
+  return rawValue;
+}
+
 function Cell({ field }: { field?: ExtractedField }) {
   if (!field) return <span className="text-slate-300">—</span>;
   return (
-    <div className="flex items-center gap-1.5">
-      <span>{field.field_value}</span>
-      <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] text-slate-500">
+    <div className="flex items-center gap-1.5 min-w-0 max-w-[280px]">
+      <span
+        className="truncate font-medium text-slate-800 text-xs"
+        title={field.field_value}
+      >
+        {formatFieldValue(field.field_name, field.field_value)}
+      </span>
+      <span className="shrink-0 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] text-slate-500 tabular-nums">
         {formatPercent(field.confidence)}
       </span>
     </div>

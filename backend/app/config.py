@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str = ""
     MISTRAL_API_KEY: str = ""
     MISTRAL_MODEL: str = "mistral-medium-latest"
+    MISTRAL_VISION_MODEL: str = "pixtral-12b-2409"
     EMBEDDING_MODEL: str = "all-MiniLM-L6-v2"
     UPLOAD_DIR: str = "./uploads"
     MAX_UPLOAD_SIZE_MB: int = 50

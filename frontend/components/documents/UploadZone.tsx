@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { UploadCloud } from "lucide-react";
+import { UploadCloud, FileCheck2 } from "lucide-react";
 import { useUploadDocument } from "@/hooks/useDocuments";
 import { useToast } from "@/components/ui/toast";
 import { Spinner } from "@/components/ui/spinner";
@@ -76,9 +76,11 @@ export function UploadZone() {
   return (
     <div
       className={cn(
-        "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-8 text-center transition-colors",
-        isDragging ? "border-slate-400 bg-slate-50" : "border-slate-200 bg-white",
-        uploading && "pointer-events-none cursor-default opacity-70"
+        "relative flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed py-10 px-6 sm:py-12 text-center transition-all duration-200",
+        isDragging
+          ? "border-blue-500 bg-blue-50/50 shadow-inner"
+          : "border-slate-200/90 bg-white hover:border-slate-300 hover:bg-slate-50/40 shadow-xs",
+        uploading && "pointer-events-none cursor-default opacity-80"
       )}
       onDragOver={(e) => {
         e.preventDefault();
@@ -113,22 +115,42 @@ export function UploadZone() {
         }}
       />
       {uploading ? (
-        <>
-          <Spinner className="h-6 w-6 text-slate-500" />
-          <p className="text-sm font-medium text-slate-700">
-            Uploading {currentFileName ?? "…"} ({Math.min(queueDone + 1, queueTotal)}/{queueTotal})
-          </p>
-          <Progress value={(queueDone / queueTotal) * 100} className="mt-1 w-48" />
-        </>
+        <div className="flex flex-col items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+            <Spinner className="h-6 w-6" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-slate-800">
+              Uploading {currentFileName ?? "…"} ({Math.min(queueDone + 1, queueTotal)}/{queueTotal})
+            </p>
+            <p className="text-xs text-slate-500 mt-0.5">Please wait while the document is processed</p>
+          </div>
+          <Progress value={(queueDone / queueTotal) * 100} className="w-56 mt-1" />
+        </div>
       ) : (
         <>
-          <UploadCloud className="h-6 w-6 text-slate-400" />
-          <p className="text-sm font-medium text-slate-700">
-            Drag & drop a PDF here, or click to browse
-          </p>
-          <p className="text-xs text-slate-500">
-            Purchase orders, invoices, goods receipts and policies (PDF only)
-          </p>
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 transition-transform group-hover:scale-105">
+            <UploadCloud className="h-6 w-6" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-slate-800">
+              Drag & drop your PDF documents here, or <span className="text-blue-600 underline underline-offset-2">browse</span>
+            </p>
+            <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+              Supports Purchase Orders, Invoices, Goods Receipts, and Compliance Policies
+            </p>
+          </div>
+          <div className="mt-1 flex flex-wrap items-center justify-center gap-2">
+            <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-medium text-slate-600">
+              <FileCheck2 className="h-3 w-3 text-slate-400" /> PDF only
+            </span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-medium text-slate-600">
+              Up to 50 MB
+            </span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-medium text-slate-600">
+              Auto classification & OCR
+            </span>
+          </div>
         </>
       )}
     </div>

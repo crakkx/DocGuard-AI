@@ -23,20 +23,39 @@ import { ScrollText, Trash2 } from "lucide-react";
 
 function IngestionBadge({ status, error }: { status: string; error?: string | null }) {
   const s = (status || "PENDING").toUpperCase();
-  if (s === "COMPLETED") return <Badge variant="success">COMPLETED</Badge>;
-  if (s === "PROCESSING")
+  if (s === "COMPLETED") {
     return (
-      <Badge variant="info" className="flex items-center gap-1">
-        <Spinner className="h-3 w-3" /> PROCESSING
-      </Badge>
+      <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+        Completed
+      </span>
     );
-  if (s === "FAILED")
+  }
+  if (s === "PROCESSING") {
     return (
-      <Badge variant="destructive" title={error || "Ingestion failed"}>
-        FAILED
-      </Badge>
+      <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200/80">
+        <Spinner className="h-3 w-3 text-blue-600" />
+        Processing
+      </span>
     );
-  return <Badge variant="secondary">PENDING</Badge>;
+  }
+  if (s === "FAILED") {
+    return (
+      <span
+        className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-red-50 text-red-700 border border-red-200/80"
+        title={error || "Ingestion failed"}
+      >
+        <span className="h-1.5 w-1.5 rounded-full bg-red-600" />
+        Failed
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
+      <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
+      Pending
+    </span>
+  );
 }
 
 export function PolicyList({
@@ -75,11 +94,11 @@ export function PolicyList({
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <CardTitle>Policy documents</CardTitle>
+      <Card className="overflow-hidden border border-slate-200/90 shadow-sm bg-white">
+        <CardHeader className="border-b border-slate-100 py-4 px-6">
+          <CardTitle className="text-base font-semibold text-slate-900">Policy documents</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           {policies.length === 0 ? (
             <EmptyState
               icon={ScrollText}

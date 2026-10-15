@@ -1,23 +1,316 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 @import "tailwindcss";
 
+/* ─── Design Tokens ──────────────────────────────────────────────────── */
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  /* Backgrounds */
+  --bg-page:    #F7F8FA;
+  --bg-surface: #FFFFFF;
+  --bg-sidebar: #1A1D23;
+  --bg-sidebar-hover: rgba(255,255,255,0.06);
+  --bg-sidebar-active: rgba(255,255,255,0.10);
+  --bg-muted:   #F1F3F7;
+
+  /* Borders */
+  --border:       #E5E8EF;
+  --border-dark:  rgba(255,255,255,0.10);
+
+  /* Text */
+  --text-primary:   #111827;
+  --text-secondary: #6B7280;
+  --text-muted:     #9CA3AF;
+  --text-sidebar:   #D1D5DB;
+  --text-sidebar-muted: rgba(255,255,255,0.38);
+
+  /* Accent */
+  --accent-blue:    #3B82F6;
+  --accent-indigo:  #6366F1;
+  --accent-green:   #22C55E;
+  --accent-amber:   #F59E0B;
+  --accent-rose:    #EF4444;
+  --accent-purple:  #8B5CF6;
+
+  /* Sidebar accent bar */
+  --sidebar-active-bar: #3B82F6;
+
+  /* Shadows */
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-card-hover: 0 4px 12px rgba(0,0,0,0.10);
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: var(--bg-page);
+  --color-foreground: var(--text-primary);
+  --font-sans: "Inter", system-ui, sans-serif;
 }
 
-/* This app does not yet have a dark theme for its components (cards, tables,
-   sidebar are all hardcoded light-mode Tailwind classes) — deliberately not
-   following prefers-color-scheme here to avoid a half-dark/half-light page. */
-
+/* ─── Reset ──────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+html { height: 100%; -webkit-font-smoothing: antialiased; }
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+a { text-decoration: none; color: inherit; }
+
+/* ─── Scrollbar ──────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #CBD5E1; }
+
+/* ─── Animations ─────────────────────────────────────────────────────── */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
+.animate-fade-up { animation: fadeSlideUp 0.25s ease both; }
+
+/* ─── Sidebar Nav ─────────────────────────────────────────────────────── */
+.dg-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: var(--radius-md);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-sidebar);
+  transition: background 0.15s, color 0.15s;
+  position: relative;
+  text-decoration: none;
+  cursor: pointer;
+}
+.dg-nav-link:hover {
+  background: var(--bg-sidebar-hover);
+  color: #FFFFFF;
+}
+.dg-nav-link.active {
+  background: var(--bg-sidebar-active);
+  color: #FFFFFF;
+}
+.dg-nav-link.active::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 50%;
+  transform: translateY(-50%);
+  width: 3px; height: 60%;
+  background: var(--sidebar-active-bar);
+  border-radius: 0 3px 3px 0;
+}
+
+/* ─── Status Dot ─────────────────────────────────────────────────────── */
+.dg-status-dot {
+  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+}
+.dg-status-dot.online  { background: var(--accent-green); animation: pulse-dot 2s infinite; }
+.dg-status-dot.offline { background: var(--accent-rose); }
+.dg-status-dot.pending { background: var(--text-muted); }
+
+/* ─── Card ───────────────────────────────────────────────────────────── */
+.dg-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.2s;
+}
+.dg-card:hover { box-shadow: var(--shadow-card-hover); }
+
+/* ─── Stat Card ──────────────────────────────────────────────────────── */
+.dg-stat-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.dg-stat-card:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-1px);
+}
+
+/* ─── Icon Pill ──────────────────────────────────────────────────────── */
+.dg-icon-pill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px; height: 36px;
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+}
+
+/* ─── Table ──────────────────────────────────────────────────────────── */
+.dg-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.dg-table th {
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-muted);
+}
+.dg-table td {
+  padding: 12px 14px;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+}
+.dg-table tr:last-child td { border-bottom: none; }
+.dg-table tbody tr:hover td { background: var(--bg-muted); }
+
+/* ─── Inputs ─────────────────────────────────────────────────────────── */
+.dg-input {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 13.5px;
+  padding: 7px 11px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  width: 100%;
+  font-family: inherit;
+}
+.dg-input::placeholder { color: var(--text-muted); }
+.dg-input:focus { border-color: var(--accent-blue); box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
+
+/* ─── Upload Zone ────────────────────────────────────────────────────── */
+.dg-upload-zone {
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius-lg);
+  padding: 40px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  background: var(--bg-muted);
+}
+.dg-upload-zone:hover, .dg-upload-zone.dragging {
+  border-color: var(--accent-blue);
+  background: rgba(59,130,246,0.04);
+}
+
+/* ─── Badge ──────────────────────────────────────────────────────────── */
+.dg-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* ─── Divider ────────────────────────────────────────────────────────── */
+.dg-divider { border: none; border-top: 1px solid var(--border); }
+
+/* ─── Section Header ─────────────────────────────────────────────────── */
+.dg-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+.dg-section-desc {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ─── Progress bar ───────────────────────────────────────────────────── */
+.dg-progress-track {
+  height: 6px;
+  background: var(--bg-muted);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.dg-progress-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ─── Queue Row ──────────────────────────────────────────────────────── */
+.dg-queue-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 4px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.12s;
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.dg-queue-row:last-child { border-bottom: none; }
+.dg-queue-row:hover { background: var(--bg-muted); padding-left: 8px; padding-right: 8px; margin: 0 -4px; }
+
+/* ─── Button ─────────────────────────────────────────────────────────── */
+.dg-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--radius-md);
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: none;
+  outline: none;
+  font-family: inherit;
+}
+.dg-btn-primary {
+  background: var(--accent-blue);
+  color: #fff;
+}
+.dg-btn-primary:hover {
+  background: #2563EB;
+  box-shadow: 0 2px 8px rgba(59,130,246,0.3);
+}
+.dg-btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+.dg-btn-ghost:hover {
+  background: var(--bg-muted);
+  color: var(--text-primary);
+  border-color: #CBD5E1;
+}
+.dg-btn-danger {
+  background: transparent;
+  color: var(--accent-rose);
+  border: 1px solid rgba(239,68,68,0.25);
+  font-size: 12px;
+  padding: 5px 10px;
+}
+.dg-btn-danger:hover {
+  background: rgba(239,68,68,0.06);
+  border-color: rgba(239,68,68,0.4);
 }

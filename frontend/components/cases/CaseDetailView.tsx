@@ -47,7 +47,7 @@ export function CaseDetailView({ caseId }: { caseId: string }) {
   const findingsWithEvidence = caseDetail.findings.filter((f) => f.policy_clause_text);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6 sm:gap-7">
       <CaseHeader caseDetail={caseDetail} />
 
       <Card>

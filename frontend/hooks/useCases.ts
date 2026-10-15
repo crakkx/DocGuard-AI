@@ -89,3 +89,15 @@ export function useCaseDecision(caseId: string) {
     },
   });
 }
+
+export function useDeleteCase() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (caseId: string) => api.deleteCase(caseId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cases"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
+}
+
